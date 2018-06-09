@@ -1,0 +1,4 @@
+face_recognition
+opencv_python
+requests
+python-firebase
