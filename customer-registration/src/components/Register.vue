@@ -60,8 +60,8 @@
 
                 <md-field :class="getValidationClass('faceimage')">
                   <label>Add an image of your face here</label>
-                  <md-file v-model="form.faceimage" />
-                  <span class="md-error" v-if="!$v.form.faceimage.required">The email is required</span>
+                  <md-file v-model="form.faceimage" @change="onFileChange"/>
+                  <span class="md-error" v-if="!$v.form.faceimage.required">The image is required</span>
                 </md-field>
 
               </md-card-content>
@@ -83,14 +83,17 @@
 
 <script>
 /* eslint-disable indent */
-
   import { validationMixin } from 'vuelidate'
+  import { storageReferences } from './firebase'
+
   import {
     required,
     email,
     minLength,
     maxLength
   } from 'vuelidate/lib/validators'
+
+  let image;
 
   export default {
     name: 'FormValidation',
@@ -112,19 +115,18 @@
     validations: {
       form: {
         firstName: {
-          required,
-          minLength: minLength(3)
+          minLength: minLength(3),
+          required
         },
         lastName: {
-          required,
-          minLength: minLength(3)
+          minLength: minLength(3),
+          required
         },
         age: {
-          required,
-          maxLength: maxLength(3)
+          maxLength: maxLength(3),
+          required
         },
         email: {
-          required,
           email
         },
         faceimage: {
@@ -133,6 +135,19 @@
       }
     },
     methods: {
+      onFileChange (e) {
+        let files = e.target.files || e.dataTransfer.files
+        if (!files.length) {
+          return
+        }
+
+        this.form.faceimage = files[0]
+
+        image = files[0]
+
+        // const fireStoreUrl = `https://firestore.googleapis.com/v1beta1/projects/adidas-hack-amsterdam-2018.firebaseio.com/documents/${this.form.name}_image`
+
+      },
       getValidationClass (fieldName) {
         const field = this.$v.form[fieldName]
 
@@ -148,52 +163,97 @@
         this.form.lastName = null
         this.form.age = null
         this.form.email = null
+        this.form.faceimage = null
+        this.form.authenticate = []
       },
       saveUser () {
         this.sending = true
-        if (this.form.authenticate.includes('Facebook')) {
-          this.authenticate('facebook')
-          this.sending = false
-//          let userId = 0
-//          let accessToken = 0
-//          switch (this.form.firstName) {
-//            case 'Aayush':
-//              userId = '1227781447248169'
-//              accessToken = 'EAACEdEose0cBADQboxDCV7QDwZC5faXVYa8RZCBRIpeVMZAasUVgWMZByM4n1k5mYlkfcz6XXcUlPp0qoOOtTJhnNBZAxBCDW3LAPrUhBLIbsCdl8mWWqXiZBhRpS4ZADiPQaZCmIVJ4aOBKtW8ZCl92PgP5rMtUNW7jZCRQgvQSrLEY18wJO7TD9jl5ZC7ZBOHUVtFHOtc12ZBeIiQZDZD'
-//              break
-//            case 'Sami':
-//              userId = '100005684656915'
-//              accessToken = ''
-//              break
-//            default:
-//              userId = '1227781447248169'
-//              accessToken = 'EAACEdEose0cBADQboxDCV7QDwZC5faXVYa8RZCBRIpeVMZAasUVgWMZByM4n1k5mYlkfcz6XXcUlPp0qoOOtTJhnNBZAxBCDW3LAPrUhBLIbsCdl8mWWqXiZBhRpS4ZADiPQaZCmIVJ4aOBKtW8ZCl92PgP5rMtUNW7jZCRQgvQSrLEY18wJO7TD9jl5ZC7ZBOHUVtFHOtc12ZBeIiQZDZD'
-//              break
-//          }
-//
-//          const requestUrl = `https://graph.facebook.com/v3.0/${userId}?fields=likes,events,birthday&access_token=${accessToken}`
 
-//          this.axios.get(requestUrl).then((response) => {
-//            console.log(response.data)
-//          })
+        storageReferences.storage.ref().child('users/test.png').put(image)
+          .then((res) => {
+            console.log(res)
+          })
+
+        let userData;
+
+        if (this.form.firstName === 'Aayush') {
+          userData = {
+            'user_name': 'Aayush Chadha',
+            'sports_information': [
+              {
+                'sport': 'Football',
+                'team': 'Manchester United'
+              },
+              {
+                'sport': 'Rugby',
+                'team': 'All Blacks'
+              }
+            ],
+            "age": 20,
+            "time_spent_running_last_week_in_mins": 210,
+            "birthday": "05/12/1998",
+            "loyalty_score": 200,
+            "sizes": [
+              {"bottom": "M",
+              "shows": "10 UK",
+              "top": "M"}
+            ],
+            "occupation": "Student"
+          }
+        } else {
+
+          userData = {
+            'user_name': 'Sami Alabed',
+            'sports_information': [
+              {
+                'sport': 'Tennis',
+              },
+              {
+                'sport': 'Football',
+                'team': 'Germany'
+              }
+            ],
+            "age": 23,
+            "time_spent_running_last_week_in_mins": 360,
+            "birthday": "15/04/1995",
+            "loyalty_score": 250,
+            "sizes": [
+              {"bottom": "M",
+                "shows": "10 UK",
+                "top": "M"}
+            ],
+            "occupation": "Employed"
+          }
+
         }
+
+        // We tried linking to Google Fit API and other data sources but some of them weren't playing well with our
+        // app and we had to finally use test data
+
+
+        let firebaseUrl = 'https://adidas-hack-amsterdam-2018.firebaseio.com/users.json'
+
+        // let currentReader = new FileReader()
+//        alert(this.form.faceimage)
+//        this.axios.put(`https://firestore.googleapis.com/v1beta1/projects/adidas-hack-amsterdam-2018.firebaseio.com/documents/test_image`, this.form.faceimage).then((response) => {
+//          console.log(response.data)
+//        })
+
+        this.axios.put(firebaseUrl, userData).then((response) => {
+          console.log(response.data)
+        })
+
+        this.clearForm()
+        this.sending = false
+
+        },
         // Instead of this timeout, here you can call your API
-      },
       validateUser () {
         this.$v.$touch()
 
         if (!this.$v.$invalid) {
           this.saveUser()
         }
-      },
-      authenticate: function (provider) {
-        this.$auth.authenticate(provider).then(function () {
-          // Execute application logic after successful social authentication
-          let token = this.$auth.getToken()
-          this.token = token
-          this.sending = false
-          alert(this.token)
-        })
       }
     }
   }

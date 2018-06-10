@@ -1,4 +1,4 @@
-# customer-registration
+# The Kilburnians
 
 > A project to store customer consented data for adidas to improve their in store experience
 
