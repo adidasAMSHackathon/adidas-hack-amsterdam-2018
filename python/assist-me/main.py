@@ -1,27 +1,32 @@
 # Based on https://github.com/ageitgey/face_recognition
+import urllib
 import webbrowser
 
 import cv2
 import face_recognition
+from firebase import firebase
 
 # TODOs:
-# - Pull firebase for images and train on startup
 # - Create a cached version of firebase to link of the customer
-
 
 video_capture = cv2.VideoCapture(0)
 
-# Load a sample picture and learn how to recognize it.
-training_image = face_recognition.load_image_file("sami.jpg")
-trained_face_encoding = face_recognition.face_encodings(training_image)[0]
-
 # Create arrays of known face encodings and their names
-known_face_encodings = [
-    trained_face_encoding,
-]
-known_face_names = [
-    "Sami Alabed",
-]
+known_face_encodings = []
+known_face_names = []
+
+# pull images from db and train them
+fb = firebase.FirebaseApplication('https://adidas-hack-amsterdam-2018.firebaseio.com/', None)
+known_customers = fb.get('/users', None)
+for user, val in known_customers.items():
+    # Load a sample picture and learn how to recognize it.
+    picture_url = val['picture']
+    img_location = "/tmp/" + user + ".jpg"
+    urllib.urlretrieve(picture_url, img_location)
+    training_image = face_recognition.load_image_file(img_location)
+    trained_face_encoding = face_recognition.face_encodings(training_image)[0]
+    known_face_encodings.append(trained_face_encoding)
+    known_face_names.append(user)
 
 # Initialize some variables
 face_locations = []
@@ -78,8 +83,7 @@ while True:
         if event == cv2.EVENT_LBUTTONDOWN:
             if top <= y <= bottom and left <= x <= right:
                 if name is not 'Unknown':
-                    # TODO(samialab): change this to be dynamic based on the customer
-                    webbrowser.open('http://example.com')
+                    webbrowser.open('http://localhost.com/' + name)
 
 
     cv2.imshow('Video', frame)
