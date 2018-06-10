@@ -106,7 +106,8 @@
       },
       userSaved: false,
       sending: false,
-      lastUser: null
+      lastUser: null,
+      token: ''
     }),
     validations: {
       form: {
@@ -151,28 +152,30 @@
       saveUser () {
         this.sending = true
         if (this.form.authenticate.includes('Facebook')) {
-          let userId = 0
-          let accessToken = 0
-          switch (this.form.firstName) {
-            case 'Aayush':
-              userId = '1227781447248169'
-              accessToken = 'EAACEdEose0cBADQboxDCV7QDwZC5faXVYa8RZCBRIpeVMZAasUVgWMZByM4n1k5mYlkfcz6XXcUlPp0qoOOtTJhnNBZAxBCDW3LAPrUhBLIbsCdl8mWWqXiZBhRpS4ZADiPQaZCmIVJ4aOBKtW8ZCl92PgP5rMtUNW7jZCRQgvQSrLEY18wJO7TD9jl5ZC7ZBOHUVtFHOtc12ZBeIiQZDZD'
-              break
-            case 'Sami':
-              userId = '100005684656915'
-              accessToken = ''
-              break
-            default:
-              userId = '1227781447248169'
-              accessToken = 'EAACEdEose0cBADQboxDCV7QDwZC5faXVYa8RZCBRIpeVMZAasUVgWMZByM4n1k5mYlkfcz6XXcUlPp0qoOOtTJhnNBZAxBCDW3LAPrUhBLIbsCdl8mWWqXiZBhRpS4ZADiPQaZCmIVJ4aOBKtW8ZCl92PgP5rMtUNW7jZCRQgvQSrLEY18wJO7TD9jl5ZC7ZBOHUVtFHOtc12ZBeIiQZDZD'
-              break
-          }
+          this.authenticate('facebook')
+          this.sending = false
+//          let userId = 0
+//          let accessToken = 0
+//          switch (this.form.firstName) {
+//            case 'Aayush':
+//              userId = '1227781447248169'
+//              accessToken = 'EAACEdEose0cBADQboxDCV7QDwZC5faXVYa8RZCBRIpeVMZAasUVgWMZByM4n1k5mYlkfcz6XXcUlPp0qoOOtTJhnNBZAxBCDW3LAPrUhBLIbsCdl8mWWqXiZBhRpS4ZADiPQaZCmIVJ4aOBKtW8ZCl92PgP5rMtUNW7jZCRQgvQSrLEY18wJO7TD9jl5ZC7ZBOHUVtFHOtc12ZBeIiQZDZD'
+//              break
+//            case 'Sami':
+//              userId = '100005684656915'
+//              accessToken = ''
+//              break
+//            default:
+//              userId = '1227781447248169'
+//              accessToken = 'EAACEdEose0cBADQboxDCV7QDwZC5faXVYa8RZCBRIpeVMZAasUVgWMZByM4n1k5mYlkfcz6XXcUlPp0qoOOtTJhnNBZAxBCDW3LAPrUhBLIbsCdl8mWWqXiZBhRpS4ZADiPQaZCmIVJ4aOBKtW8ZCl92PgP5rMtUNW7jZCRQgvQSrLEY18wJO7TD9jl5ZC7ZBOHUVtFHOtc12ZBeIiQZDZD'
+//              break
+//          }
+//
+//          const requestUrl = `https://graph.facebook.com/v3.0/${userId}?fields=likes,events,birthday&access_token=${accessToken}`
 
-          const requestUrl = `https://graph.facebook.com/v3.0/${userId}?fields=likes,events,birthday&access_token=${accessToken}`
-
-          this.axios.get(requestUrl).then((response) => {
-            console.log(response.data)
-          })
+//          this.axios.get(requestUrl).then((response) => {
+//            console.log(response.data)
+//          })
         }
         // Instead of this timeout, here you can call your API
       },
@@ -182,6 +185,15 @@
         if (!this.$v.$invalid) {
           this.saveUser()
         }
+      },
+      authenticate: function (provider) {
+        this.$auth.authenticate(provider).then(function () {
+          // Execute application logic after successful social authentication
+          let token = this.$auth.getToken()
+          this.token = token
+          this.sending = false
+          alert(this.token)
+        })
       }
     }
   }
