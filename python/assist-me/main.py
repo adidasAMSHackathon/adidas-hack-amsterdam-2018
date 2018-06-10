@@ -83,7 +83,7 @@ while True:
         if event == cv2.EVENT_LBUTTONDOWN:
             if top <= y <= bottom and left <= x <= right:
                 if name is not 'Unknown':
-                    webbrowser.open('http://localhost.com/' + name)
+                    webbrowser.open('http://48217499.ngrok.io?name=' + name)
 
 
     cv2.imshow('Video', frame)
